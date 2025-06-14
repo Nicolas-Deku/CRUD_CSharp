@@ -1,16 +1,17 @@
-﻿using System;
-using Npgsql;
+﻿using Npgsql;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace WindowsFormsApplication.classe
 {
     class DatabaseVoiture
     {
         // Change la chaîne de connexion selon ta config
-        private static string connectionString = @"Data Source=(LocalDB)\v11.0;AttachDbFilename=C:\Users\Deku\Documents\Visual Studio 2013\Projects\WindowsFormsApplication\WindowsFormsApplication\exemple.mdf;Integrated Security=True";
+        private static string connectionString = "Host=localhost;Port=5432;Database=exemple;Username=postgres;Password=deku2002";
 
 
         public static void EnregistrerVoiture(Voiture v)
@@ -29,7 +30,7 @@ namespace WindowsFormsApplication.classe
                     cmd.Parameters.AddWithValue("modele", v.Modele);
                     cmd.Parameters.AddWithValue("annee", v.Annee);
                     cmd.Parameters.AddWithValue("prix", v.Prix);
-                    cmd.Parameters.AddWithValue("image_path", v.Prix);
+                    cmd.Parameters.AddWithValue("image_path", v.ImagePath);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -86,30 +87,43 @@ namespace WindowsFormsApplication.classe
         {
             List<Voiture> voitures = new List<Voiture>();
 
-            using (var connection = new NpgsqlConnection(connectionString))
+            try
             {
-                connection.Open();
-
-                string sql = "SELECT id, matricule, marque, modele, annee, prix, image_path FROM voiture";
-
-                using (var cmd = new NpgsqlCommand(sql, connection))
-                using (var reader = cmd.ExecuteReader())
+                using (var connection = new NpgsqlConnection(connectionString))
                 {
-                    while (reader.Read())
-                    {
-                        Voiture v = new Voiture(
-                            matricule: reader.GetString(1),
-                            marque: reader.GetString(2),
-                            modele: reader.GetString(3),
-                            annee: reader.GetInt32(4),
-                            prix: reader.GetDecimal(5),
-                            imagePath: reader.IsDBNull(6) ? "" : reader.GetString(6),
-                            id: reader.GetInt32(0)
-                        );
+                    connection.Open();
 
-                        voitures.Add(v);
+                    string sql = "SELECT id, matricule, marque, modele, annee, prix, image_path FROM voiture";
+
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            try
+                            {
+                                Voiture v = new Voiture(
+                                    id: reader.GetInt32(0),
+                                    matricule: reader.GetString(1),
+                                    marque: reader.GetString(2),
+                                    modele: reader.GetString(3),
+                                    annee: reader.GetInt32(4),
+                                    prix: reader.GetDecimal(5),
+                                    imagePath: reader.IsDBNull(6) ? "" : reader.GetString(6)
+                                );
+                                voitures.Add(v);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Erreur création voiture: {ex.Message}");
+                            }
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erreur connexion base de données: {ex.Message}");
             }
 
             return voitures;

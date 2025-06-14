@@ -19,12 +19,13 @@ namespace WindowsFormsApplication
         {
             InitializeComponent();
             tbliste.AutoGenerateColumns = false;
+            ConfigureDataGridViewColumns();
             ChargerVoitures();
+            fermer();
         }
 
         private void btnparccour_Click(object sender, EventArgs e)
         {
-            // 1. Ouvrir le dialogue pour choisir une image
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Title = "Choisir une image";
             ofd.Filter = "Images (*.jpg;*.png;*.jpeg)|*.jpg;*.png;*.jpeg";
@@ -32,33 +33,37 @@ namespace WindowsFormsApplication
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 string cheminOriginal = ofd.FileName;
-
-                // 2. Dossier de destination
                 string dossierDestination = Path.Combine(Application.StartupPath, "resources", "images");
+
                 if (!Directory.Exists(dossierDestination))
                     Directory.CreateDirectory(dossierDestination);
 
-                // 3. Nom unique pour l’image
                 string nomFichier = Guid.NewGuid().ToString() + Path.GetExtension(cheminOriginal);
-                string cheminDestination = Path.Combine(dossierDestination, nomFichier);
+                cheminImage = Path.Combine(dossierDestination, nomFichier); // Stocke le chemin complet
 
-                // 4. Copier l'image
-                File.Copy(cheminOriginal, cheminDestination);
-
-                // 5. Afficher l'image dans le PictureBox
-                plafficheimage.Image = new System.Drawing.Bitmap(cheminDestination);
-                plafficheimage.SizeMode = PictureBoxSizeMode.Zoom;
-
-                // Optionnel : stocker le chemin dans une variable ou base de données
-                MessageBox.Show("Image importée avec succès !");
+                try
+                {
+                    File.Copy(cheminOriginal, cheminImage);
+                    plafficheimage.Image = Image.FromFile(cheminImage);
+                    plafficheimage.SizeMode = PictureBoxSizeMode.Zoom;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erreur lors de la copie de l'image: " + ex.Message);
+                    cheminImage = null;
+                }
             }
         }
 
         private void btnenreg_Click(object sender, EventArgs e)
         {
 
-            decimal prix = decimal.Parse(txtprix.Text);
-            int annee = int.Parse(txtannee.Text);
+            if (!decimal.TryParse(txtprix.Text, out decimal prix) || !int.TryParse(txtannee.Text, out int annee))
+            {
+                MessageBox.Show("Veuillez entrer des valeurs valides pour le prix et l'année");
+                return;
+            }
+
             Voiture v = new Voiture
             {
                 Matricule = txtmatricule.Text,
@@ -73,12 +78,15 @@ namespace WindowsFormsApplication
             {
                 DatabaseVoiture.EnregistrerVoiture(v);
                 MessageBox.Show("Voiture enregistrée avec succès !");
+                cheminImage = null; 
+                plafficheimage.Image = null;
+                ChargerVoitures();
+                effacechamp();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Erreur : " + ex.Message);
             }
-
         }
 
         private void btnmodif_Click(object sender, EventArgs e)
@@ -100,7 +108,10 @@ namespace WindowsFormsApplication
         DatabaseVoiture.ModifierVoiture(v);
         MessageBox.Show("Voiture modifiée avec succès !");
         btnenreg.Show();
-    }
+                ChargerVoitures();
+                fermer();
+                effacechamp();
+            }
     catch (Exception ex)
     {
         MessageBox.Show("Erreur : " + ex.Message);
@@ -121,6 +132,9 @@ namespace WindowsFormsApplication
             DatabaseVoiture.SupprimerVoiture(id);
             MessageBox.Show("Voiture supprimée avec succès !");
             btnenreg.Show();
+            ChargerVoitures();
+                    fermer();
+                    effacechamp();
         }
         catch (Exception ex)
         {
@@ -135,49 +149,145 @@ namespace WindowsFormsApplication
             try
             {
                 var liste = DatabaseVoiture.GetAllVoitures();
-                tbliste.DataSource = null; 
-                tbliste.DataSource = liste;
+
+                if (liste.Count == 0)
+                {
+                    MessageBox.Show("Aucune voiture trouvée dans la base de données.");
+                    return;
+                }
+
+                var bindingSource = new BindingSource();
+                bindingSource.DataSource = liste;
+                tbliste.DataSource = bindingSource;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erreur : " + ex.Message);
+                MessageBox.Show("Erreur lors du chargement : " + ex.Message);
             }
         }
 
         private void tbliste_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             btnenreg.Hide();
-            if (e.RowIndex >= 0) 
+            if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = tbliste.Rows[e.RowIndex];
 
-                
-                txtmatricule.Text = row.Cells["MATRICULE"].Value.ToString();
-                txtmarque.Text = row.Cells["Column1"].Value.ToString();
-                txtmodele.Text = row.Cells["Column2"].Value.ToString();
-                txtannee.Text = row.Cells["Column3"].Value.ToString();
-                txtprix.Text = row.Cells["Column4"].Value.ToString();
-                string imagePath = row.Cells["image_path"].Value.ToString();
+                txtmatricule.Text = row.Cells["colMatricule"].Value.ToString();
+                txtmarque.Text = row.Cells["colMarque"].Value.ToString();
+                txtmodele.Text = row.Cells["colModele"].Value.ToString();
+                txtannee.Text = row.Cells["colAnnee"].Value.ToString();
+                txtprix.Text = row.Cells["colPrix"].Value.ToString();
+                string imagePath = row.Cells["colImagePath"].Value?.ToString() ?? "";
 
-                if (File.Exists(imagePath))
+                txtid.Text = row.Cells["colId"].Value.ToString();
+
+                if (!string.IsNullOrEmpty(imagePath) && File.Exists(imagePath))
                 {
-                    plimage.BackgroundImage = Image.FromFile(imagePath);
+                    try
+                    {
+                        plimage.BackgroundImage = Image.FromFile(imagePath);
+                    }
+                    catch
+                    {
+                        plimage.BackgroundImage = null;
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("L'image n'existe pas : " + imagePath);
-                    plimage.BackgroundImage = null; // Par sécurité
-                }
-
-
-               
-                if (row.Cells["Column5"] != null)
-                {
-                    int idVoiture = Convert.ToInt32(row.Cells["Id"].Value);
-                   
+                    plimage.BackgroundImage = null;
                 }
             }
+            afficher();
+        }
+        private void afficher()
+        {
+            btnsupp.Show();
+            btnmodif.Show();
+        }
+        private void fermer()
+        {
+            btnsupp.Hide();
+            btnmodif.Hide();
+        }
+        private void effacechamp()
+        {
+            txtid.Text = "";
+            txtmatricule.Text = "";
+            txtmodele.Text = "";
+            txtprix.Text = "";
+            txtmarque.Text = "";
+            txtannee.Text = "";
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ConfigureDataGridViewColumns()
+        {
+            // Effacer les colonnes existantes
+            tbliste.Columns.Clear();
+
+            // Ajouter les colonnes avec les bons noms
+            tbliste.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "colMatricule",
+                DataPropertyName = "Matricule",
+                HeaderText = "Matricule"
+            });
+
+            tbliste.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "colMarque",
+                DataPropertyName = "Marque",
+                HeaderText = "Marque"
+            });
+
+            tbliste.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "colModele",
+                DataPropertyName = "Modele",
+                HeaderText = "Modèle"
+            });
+
+            tbliste.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "colAnnee",
+                DataPropertyName = "Annee",
+                HeaderText = "Année"
+            });
+
+            tbliste.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "colPrix",
+                DataPropertyName = "Prix",
+                HeaderText = "Prix",
+                DefaultCellStyle = new DataGridViewCellStyle() { Format = "N2" }
+            });
+
+            tbliste.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "colImagePath",
+                DataPropertyName = "ImagePath",
+                HeaderText = "Chemin Image",
+                Visible = false // On cache cette colonne
+            });
+
+            tbliste.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "colId",
+                DataPropertyName = "Id",
+                HeaderText = "ID",
+                Visible = false // On cache l'ID
+            });
+        }
+
+        private void btnannuler_Click(object sender, EventArgs e)
+        {
+            effacechamp();
+        }
     }
+
 }

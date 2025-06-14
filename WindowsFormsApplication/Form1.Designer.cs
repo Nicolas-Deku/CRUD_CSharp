@@ -39,6 +39,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.txtprix = new System.Windows.Forms.TextBox();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.txtid = new System.Windows.Forms.TextBox();
             this.plimage = new System.Windows.Forms.Panel();
             this.btnsupp = new System.Windows.Forms.Button();
             this.btnmodif = new System.Windows.Forms.Button();
@@ -50,14 +51,13 @@
             this.txtmodele = new System.Windows.Forms.TextBox();
             this.txtmarque = new System.Windows.Forms.TextBox();
             this.txtmatricule = new System.Windows.Forms.TextBox();
-            this.txtid = new System.Windows.Forms.TextBox();
-            this.MATRICULE = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column0 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.plafficheimage)).BeginInit();
             this.panel2.SuspendLayout();
@@ -195,6 +195,14 @@
             this.panel2.Size = new System.Drawing.Size(913, 566);
             this.panel2.TabIndex = 6;
             // 
+            // txtid
+            // 
+            this.txtid.Location = new System.Drawing.Point(271, 441);
+            this.txtid.Name = "txtid";
+            this.txtid.Size = new System.Drawing.Size(100, 20);
+            this.txtid.TabIndex = 17;
+            this.txtid.Visible = false;
+            // 
             // plimage
             // 
             this.plimage.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
@@ -242,13 +250,13 @@
             this.tbliste.AllowUserToDeleteRows = false;
             this.tbliste.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.tbliste.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.MATRICULE,
+            this.Column6,
+            this.Column0,
             this.Column1,
             this.Column2,
             this.Column3,
             this.Column4,
-            this.Column5,
-            this.Column6});
+            this.Column5});
             this.tbliste.Location = new System.Drawing.Point(21, 78);
             this.tbliste.Name = "tbliste";
             this.tbliste.ReadOnly = true;
@@ -265,6 +273,7 @@
             this.btnannuler.TabIndex = 5;
             this.btnannuler.Text = "ANNULER";
             this.btnannuler.UseVisualStyleBackColor = true;
+            this.btnannuler.Click += new System.EventHandler(this.btnannuler_Click);
             // 
             // btnenreg
             // 
@@ -305,19 +314,18 @@
             this.txtmatricule.Size = new System.Drawing.Size(212, 20);
             this.txtmatricule.TabIndex = 0;
             // 
-            // txtid
+            // Column6
             // 
-            this.txtid.Location = new System.Drawing.Point(271, 441);
-            this.txtid.Name = "txtid";
-            this.txtid.Size = new System.Drawing.Size(100, 20);
-            this.txtid.TabIndex = 17;
-            this.txtid.Visible = false;
+            this.Column6.HeaderText = "id";
+            this.Column6.Name = "Column6";
+            this.Column6.ReadOnly = true;
+            this.Column6.Visible = false;
             // 
-            // MATRICULE
+            // Column0
             // 
-            this.MATRICULE.HeaderText = "MATRICULE";
-            this.MATRICULE.Name = "MATRICULE";
-            this.MATRICULE.ReadOnly = true;
+            this.Column0.HeaderText = "MATRICULE";
+            this.Column0.Name = "Column0";
+            this.Column0.ReadOnly = true;
             // 
             // Column1
             // 
@@ -350,13 +358,6 @@
             this.Column5.ReadOnly = true;
             this.Column5.Visible = false;
             // 
-            // Column6
-            // 
-            this.Column6.HeaderText = "id";
-            this.Column6.Name = "Column6";
-            this.Column6.ReadOnly = true;
-            this.Column6.Visible = false;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -366,6 +367,7 @@
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Ajout d\' une voiture";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.plafficheimage)).EndInit();
@@ -401,13 +403,13 @@
         private System.Windows.Forms.Button btnparccour;
         private System.Windows.Forms.PictureBox plafficheimage;
         private System.Windows.Forms.TextBox txtid;
-        private System.Windows.Forms.DataGridViewTextBoxColumn MATRICULE;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column6;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column0;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column6;
     }
 }
 
